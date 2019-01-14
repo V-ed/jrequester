@@ -1,3 +1,7 @@
+[![Version](https://img.shields.io/maven-central/v/io.github.v-ed/jrequester.svg?label=version)](https://search.maven.org/artifact/io.github.v-ed/jrequester)
+[![Build Status](https://travis-ci.com/V-ed/jrequester.svg?branch=master)](https://travis-ci.com/V-ed/jrequester)
+[![Coverage Status](https://coveralls.io/repos/github/V-ed/jrequester/badge.svg)](https://coveralls.io/github/V-ed/jrequester)
+
 # JRequester
 
 Plugin that builds a request from a String or an array of arguments.
