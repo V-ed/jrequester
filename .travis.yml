@@ -1,0 +1,46 @@
+language: java
+
+jdk:
+  - oraclejdk8
+
+sudo: false
+
+env:
+  global:
+    - MAVEN_OPTS="-Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn"
+    - IS_SNAPSHOT="mvn help:evaluate -Dexpression=project.version -q -DforceStdout | grep .*SNAPSHOT$"
+
+install:
+  - mvn test-compile -DskipTests=true -Dmaven.javadoc.skip=true -B -V
+
+script:
+  - mvn clean test jacoco:report -B
+
+after_success:
+  - mvn coveralls:report -B
+
+before_deploy:
+  - cp .travis.settings.xml $HOME/.m2/settings.xml
+  - if [[ $TRAVIS_TAG ]]; then
+      echo $GPG_SECRET_KEYS | base64 --decode | $GPG_EXECUTABLE --import &&
+      echo $GPG_OWNERTRUST | base64 --decode | $GPG_EXECUTABLE --import-ownertrust;
+    fi
+
+deploy:
+  - provider: script
+    script: mvn deploy -DskipTests -B -P release
+    skip_cleanup: true
+    on:
+      condition: -z $IS_SNAPSHOT
+      tags: true
+  - provider: script
+    script: mvn deploy -DskipTests -B
+    skip_cleanup: true
+    on:
+      condition: $IS_SNAPSHOT
+      branch: dev
+
+notifications:
+  email:
+    on_success: never
+    on_failure: change
