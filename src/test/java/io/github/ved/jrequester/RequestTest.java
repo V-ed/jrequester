@@ -11,14 +11,14 @@ public class RequestTest {
 		
 		Request testRequest = new Request("!test -abcd");
 		
-		testRequest.setParameterWeight("a", 1);
-		testRequest.setParameterWeight("b", 2);
-		testRequest.setParameterWeight("d", 3);
+		testRequest.setOptionWeight("a", 1);
+		testRequest.setOptionWeight("b", 2);
+		testRequest.setOptionWeight("d", 3);
 		
-		int weightForA = testRequest.getParameter("a").getWeight();
-		int weightForB = testRequest.getParameter("b").getWeight();
-		int weightForC = testRequest.getParameter("c").getWeight();
-		int weightForD = testRequest.getParameter("d").getWeight();
+		int weightForA = testRequest.getOption("a").getWeight();
+		int weightForB = testRequest.getOption("b").getWeight();
+		int weightForC = testRequest.getOption("c").getWeight();
+		int weightForD = testRequest.getOption("d").getWeight();
 		
 		assertEquals(1, weightForA);
 		assertEquals(2, weightForB);
@@ -32,19 +32,19 @@ public class RequestTest {
 		
 		Request testRequest = new Request("!test -abcd");
 		
-		testRequest.setParameterWeight("a", 1);
-		testRequest.setParameterWeight("b", 2);
-		testRequest.setParameterWeight("d", 3);
+		testRequest.setOptionWeight("a", 1);
+		testRequest.setOptionWeight("b", 2);
+		testRequest.setOptionWeight("d", 3);
 		
-		testRequest.setParameterWeight("a", 3);
-		testRequest.setParameterWeight("b", 1);
-		testRequest.setParameterWeight("c", 6);
-		testRequest.setParameterWeight("d", 2);
+		testRequest.setOptionWeight("a", 3);
+		testRequest.setOptionWeight("b", 1);
+		testRequest.setOptionWeight("c", 6);
+		testRequest.setOptionWeight("d", 2);
 		
-		int weightForAMod = testRequest.getParameter("a").getWeight();
-		int weightForBMod = testRequest.getParameter("b").getWeight();
-		int weightForCMod = testRequest.getParameter("c").getWeight();
-		int weightForDMod = testRequest.getParameter("d").getWeight();
+		int weightForAMod = testRequest.getOption("a").getWeight();
+		int weightForBMod = testRequest.getOption("b").getWeight();
+		int weightForCMod = testRequest.getOption("c").getWeight();
+		int weightForDMod = testRequest.getOption("d").getWeight();
 		
 		assertEquals(4, weightForAMod);
 		assertEquals(1, weightForBMod);

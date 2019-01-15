@@ -7,7 +7,7 @@ import java.util.regex.Pattern;
 public class Request implements Utils {
 	
 	public final static String DEFAULT_COMMAND_PREFIX = "!";
-	public final static char DEFAULT_PARAMETER_PREFIX = '-';
+	public final static char DEFAULT_OPTION_PREFIX = '-';
 	
 	private String initialMessage;
 	
@@ -16,41 +16,41 @@ public class Request implements Utils {
 	
 	private String commandPrefix;
 	
-	private Map<String, Parameter> parameters;
-	private Map<Parameter, List<String>> parametersLinks;
-	private char parametersPrefix;
+	private Map<String, OptionData> options;
+	private Map<OptionData, List<String>> optionsLinks;
+	private char optionsPrefix;
 	
-	private List<Parameter> duplicateParams;
+	private List<OptionData> duplicateOptions;
 	
 	public Request(String[] args){
-		this(args, DEFAULT_PARAMETER_PREFIX);
+		this(args, DEFAULT_OPTION_PREFIX);
 	}
 	
 	public Request(String receivedMessage){
-		this(receivedMessage, DEFAULT_PARAMETER_PREFIX);
+		this(receivedMessage, DEFAULT_OPTION_PREFIX);
 	}
 	
-	public Request(String[] args, char parametersPrefix){
-		this(args, DEFAULT_COMMAND_PREFIX, parametersPrefix);
+	public Request(String[] args, char optionsPrefix){
+		this(args, DEFAULT_COMMAND_PREFIX, optionsPrefix);
 	}
 	
-	public Request(String receivedMessage, char parametersPrefix){
-		this(receivedMessage, DEFAULT_COMMAND_PREFIX, parametersPrefix);
+	public Request(String receivedMessage, char optionsPrefix){
+		this(receivedMessage, DEFAULT_COMMAND_PREFIX, optionsPrefix);
 	}
 	
-	public Request(String[] args, String commandPrefix, char parametersPrefix){
-		this(buildMessageFromArgs(args, parametersPrefix), commandPrefix,
-				parametersPrefix);
+	public Request(String[] args, String commandPrefix, char optionsPrefix){
+		this(buildMessageFromArgs(args, optionsPrefix), commandPrefix,
+				optionsPrefix);
 	}
 	
 	public Request(String receivedMessage, String commandPrefix,
-			char parametersPrefix){
+			char optionsPrefix){
 		
 		this.initialMessage = receivedMessage;
 		
 		this.commandPrefix = commandPrefix;
 		
-		this.parametersPrefix = parametersPrefix;
+		this.optionsPrefix = optionsPrefix;
 		
 		if(!receivedMessage.startsWith(commandPrefix)){
 			setContent(receivedMessage);
@@ -65,18 +65,18 @@ public class Request implements Utils {
 		}
 		
 		if(hasContent()){
-			setupParameters();
+			setupOptions();
 		}
 		
 	}
 	
-	private class PossibleParam {
+	private class PossibleOption {
 		String name;
 		int index;
 		int startPos;
 		int endPos;
 		
-		public PossibleParam(String name, int index, int startPos, int endPos){
+		public PossibleOption(String name, int index, int startPos, int endPos){
 			this.name = name;
 			this.index = index;
 			this.startPos = startPos;
@@ -84,53 +84,53 @@ public class Request implements Utils {
 		}
 	}
 	
-	private void setupParameters(){
+	private void setupOptions(){
 		
-		parameters = new HashMap<>();
+		options = new HashMap<>();
 		
 		// Splits the content : Search for all spaces, except those
 		// in double quotes and put all what's found in the
-		// possibleParams ArrayList.
+		// possibleOptions ArrayList.
 		// Necessary since .split() removes the wanted Strings.
-		List<String> possibleParams = Utils.splitSpacesExcludeQuotes(content);
+		List<String> possibleOptions = Utils.splitSpacesExcludeQuotes(content);
 		
-		duplicateParams = new ArrayList<>();
+		duplicateOptions = new ArrayList<>();
 		
 		boolean canRoll = true;
 		
-		for(int i = 0; i < possibleParams.size() && canRoll; i++){
+		for(int i = 0; i < possibleOptions.size() && canRoll; i++){
 			
-			PossibleParam possibleParam = new PossibleParam(
-					possibleParams.get(i), i, -1, -1);
+			PossibleOption possibleOption = new PossibleOption(
+					possibleOptions.get(i), i, -1, -1);
 			
-			if(possibleParam.name.equals(getParametersPrefix() + ""
-					+ getParametersPrefix())){
-				// If string is double parameter prefix, remove it and stop taking params
+			if(possibleOption.name.equals(getOptionsPrefix() + ""
+					+ getOptionsPrefix())){
 				
-				possibleParam.startPos = getContent().indexOf(
-						possibleParam.name);
-				possibleParam.endPos = possibleParam.startPos
-						+ possibleParam.name.length();
+				// If string is double option prefix, remove it and stop taking options
+				possibleOption.startPos = getContent().indexOf(
+						possibleOption.name);
+				possibleOption.endPos = possibleOption.startPos
+						+ possibleOption.name.length();
 				
 				canRoll = false;
 				
 			}
-			else if(stringIsParameter(possibleParam.name)){
-				// If string is structured as a parameter, create it.
+			else if(stringIsOption(possibleOption.name)){
 				
-				canRoll = handleParameterCreation(possibleParam, possibleParams);
+				// If string is structured as an option, create it.
+				canRoll = handleOptionCreation(possibleOption, possibleOptions);
 				
 			}
 			
-			if(possibleParam.startPos != -1){
+			if(possibleOption.startPos != -1){
 				String contentToRemove = getContent().substring(
-						possibleParam.startPos, possibleParam.endPos);
+						possibleOption.startPos, possibleOption.endPos);
 				
 				setContent(getContent().replaceFirst(
 						Pattern.quote(contentToRemove), ""));
 			}
 			
-			i = possibleParam.index;
+			i = possibleOption.index;
 			
 		}
 		
@@ -139,30 +139,29 @@ public class Request implements Utils {
 		
 	}
 	
-	private boolean tryGetParamContent(Parameter newParameter,
-			PossibleParam possibleParam, List<String> possibleParamList){
+	private boolean tryGetOptionContent(OptionData newOption,
+			PossibleOption possibleOption, List<String> possibleOptionList){
 		
-		String possibleParamContent;
+		String possibleOptionContent;
 		
 		try{
-			possibleParamContent = possibleParamList
-					.get(possibleParam.index + 1);
-			
+			possibleOptionContent = possibleOptionList
+					.get(possibleOption.index + 1);
 		}
 		catch(IndexOutOfBoundsException e){
 			return false;
 		}
 		
-		// If the following String isn't another param, set
-		// said String as the content for the current param.
-		if(!stringIsParameter(possibleParamContent)){
+		// If the following String isn't another option, set
+		// said String as the content for the current option.
+		if(!stringIsOption(possibleOptionContent)){
 			
-			newParameter.setContent(possibleParamContent);
+			newOption.setContent(possibleOptionContent);
 			
-			possibleParam.index++;
+			possibleOption.index++;
 			
-			possibleParam.endPos = getContent().indexOf(possibleParamContent)
-					+ possibleParamContent.length();
+			possibleOption.endPos = getContent().indexOf(possibleOptionContent)
+					+ possibleOptionContent.length();
 			
 		}
 		
@@ -170,69 +169,69 @@ public class Request implements Utils {
 		
 	}
 	
-	private boolean stringIsParameter(String string){
+	private boolean stringIsOption(String string){
 		return string != null
-				&& string.matches(getParametersPrefixProtected()
-						+ "{1,2}[^\\s]+");
+				&& string.matches(getOptionsPrefixProtected() + "{1,2}[^\\s]+");
 	}
 	
-	private boolean handleParameterCreation(PossibleParam possibleParam,
-			List<String> possibleParamsList){
+	private boolean handleOptionCreation(PossibleOption possibleOption,
+			List<String> possibleOptionsList){
 		
 		boolean canRoll = true;
 		
-		possibleParam.startPos = getContent().indexOf(possibleParam.name);
-		possibleParam.endPos = possibleParam.startPos
-				+ possibleParam.name.length();
+		possibleOption.startPos = getContent().indexOf(possibleOption.name);
+		possibleOption.endPos = possibleOption.startPos
+				+ possibleOption.name.length();
 		
-		if(possibleParam.name.matches(getParametersPrefixProtected()
+		if(possibleOption.name.matches(getOptionsPrefixProtected()
 				+ "{2}[^\\s]+")){
-			// Doubled param prefix means that all letters count as one param
+			// Doubled option prefix means that all letters count as one option
 			
-			String paramName = possibleParam.name.substring(2);
+			String optionName = possibleOption.name.substring(2);
 			
-			Parameter newParam = new Parameter(paramName, possibleParam.index);
+			OptionData newOption = new OptionData(optionName,
+					possibleOption.index);
 			
-			if(parameters.containsValue(newParam)){
+			if(options.containsValue(newOption)){
 				
-				duplicateParams.add(newParam);
+				duplicateOptions.add(newOption);
 				
 			}
 			else{
 				
-				canRoll = tryGetParamContent(newParam, possibleParam,
-						possibleParamsList);
+				canRoll = tryGetOptionContent(newOption, possibleOption,
+						possibleOptionsList);
 				
-				parameters.put(newParam.getName(), newParam);
+				options.put(newOption.getOptionName(), newOption);
 				
 			}
 			
 		}
 		else{
-			// Single param prefix means that all letters counts as a different param
+			// Single option prefix means that all letters counts as a different option
 			
-			String singleParams = possibleParam.name.substring(1);
+			String singleOptions = possibleOption.name.substring(1);
 			
-			for(int j = 0; j < singleParams.length() && canRoll; j++){
+			for(int j = 0; j < singleOptions.length() && canRoll; j++){
 				
-				Parameter newParam = new ShortParameter(singleParams.charAt(j),
-						possibleParam.index + j);
+				OptionData newOption = new ShortOptionData(
+						singleOptions.charAt(j), possibleOption.index + j);
 				
-				if(parameters.containsValue(newParam)){
+				if(options.containsValue(newOption)){
 					
-					duplicateParams.add(newParam);
+					duplicateOptions.add(newOption);
 					
 				}
 				else{
 					
-					if(j == singleParams.length() - 1){
+					if(j == singleOptions.length() - 1){
 						
-						canRoll = tryGetParamContent(newParam, possibleParam,
-								possibleParamsList);
+						canRoll = tryGetOptionContent(newOption,
+								possibleOption, possibleOptionsList);
 						
 					}
 					
-					parameters.put(newParam.getName(), newParam);
+					options.put(newOption.getOptionName(), newOption);
 					
 				}
 				
@@ -298,21 +297,21 @@ public class Request implements Utils {
 		return this.commandPrefix;
 	}
 	
-	public Map<String, Parameter> getParameters(){
-		return this.parameters;
+	public Map<String, OptionData> getOptions(){
+		return this.options;
 	}
 	
-	public Map<Parameter, List<String>> getParametersLinks(){
-		return this.parametersLinks;
+	public Map<OptionData, List<String>> getOptionsLinks(){
+		return this.optionsLinks;
 	}
 	
-	public Parameter getParameterFromPosition(int position){
+	public OptionData getOptionFromPosition(int position){
 		
-		for(Map.Entry<String, Parameter> parameterEntry : this.parameters
+		for(Map.Entry<String, OptionData> optionsEntry : this.options
 				.entrySet()){
 			
-			if(parameterEntry.getValue().getWeightPosition() == position)
-				return parameterEntry.getValue();
+			if(optionsEntry.getValue().getWeightPosition() == position)
+				return optionsEntry.getValue();
 			
 		}
 		
@@ -320,13 +319,12 @@ public class Request implements Utils {
 		
 	}
 	
-	public Parameter getParameterFromWeight(int weight){
+	public OptionData getOptionsFromWeight(int weight){
 		
-		for(Map.Entry<String, Parameter> parameterEntry : this.parameters
-				.entrySet()){
+		for(Map.Entry<String, OptionData> optionEntry : this.options.entrySet()){
 			
-			if(parameterEntry.getValue().getWeight() == weight)
-				return parameterEntry.getValue();
+			if(optionEntry.getValue().getWeight() == weight)
+				return optionEntry.getValue();
 			
 		}
 		
@@ -334,34 +332,34 @@ public class Request implements Utils {
 		
 	}
 	
-	public Parameter getParameter(String... parameterNames){
+	public OptionData getOption(String... optionNames){
 		
-		if(!hasParameters()){
+		if(!hasOptions()){
 			return null;
 		}
 		
-		if(parameterNames == null || parameterNames.length == 0)
+		if(optionNames == null || optionNames.length == 0)
 			throw new IllegalArgumentException(
-					"The parametersName parameter cannot be null / empty!");
+					"The optionsName parameter cannot be null / empty!");
 		
-		for(String parameterName : parameterNames){
+		for(String optionName : optionNames){
 			
-			if(getParametersLinks() != null){
+			if(getOptionsLinks() != null){
 				
-				for(Map.Entry<Parameter, List<String>> entry : getParametersLinks()
+				for(Map.Entry<OptionData, List<String>> entry : getOptionsLinks()
 						.entrySet()){
 					
-					if(entry.getValue().contains(parameterName))
+					if(entry.getValue().contains(optionName))
 						return entry.getKey();
 					
 				}
 				
 			}
 			
-			Parameter paramFound = getParameters().get(parameterName);
+			OptionData optionFound = getOptions().get(optionName);
 			
-			if(paramFound != null)
-				return paramFound;
+			if(optionFound != null)
+				return optionFound;
 			
 		}
 		
@@ -369,57 +367,57 @@ public class Request implements Utils {
 		
 	}
 	
-	public char getParametersPrefix(){
-		return this.parametersPrefix;
+	public char getOptionsPrefix(){
+		return this.optionsPrefix;
 	}
 	
-	private String getParametersPrefixProtected(){
-		return Pattern.quote(String.valueOf(getParametersPrefix()));
+	private String getOptionsPrefixProtected(){
+		return Pattern.quote(String.valueOf(getOptionsPrefix()));
 	}
 	
-	// public boolean hasParameter(String parameterName){
-	// 	if(getParameters() == null)
+	// public boolean hasOption(String optionName){
+	// 	if(getOptions() == null)
 	// 		return false;
 	
-	// 	return this.getParameters().containsKey(parameterName);
+	// 	return this.getOptions().containsKey(optionName);
 	// }
 	
-	public boolean hasParameter(String... parameterNames){
-		return getParameter(parameterNames) != null;
+	public boolean hasOption(String... optionNames){
+		return getOption(optionNames) != null;
 	}
 	
-	public boolean hasParameters(){
-		return getParameters() != null;
+	public boolean hasOptions(){
+		return getOptions() != null;
 	}
 	
-	public void onParameterPresent(String parameterName,
-			Consumer<Parameter> onParamPresent){
-		onParameterPresent(parameterName, onParamPresent, null);
+	public void onOptionPresent(String optionName,
+			Consumer<OptionData> onOptionPresent){
+		onOptionPresent(optionName, onOptionPresent, null);
 	}
 	
-	public void onParameterPresent(String parameterName,
-			Consumer<Parameter> onParamPresent, Runnable onParamNotPresent){
+	public void onOptionPresent(String optionName,
+			Consumer<OptionData> onOptionPresent, Runnable onOptionNotPresent){
 		
-		Parameter param = null;
+		OptionData option = null;
 		
-		param = getParameter(parameterName);
+		option = getOption(optionName);
 		
-		if(param != null){
-			onParamPresent.accept(param);
+		if(option != null){
+			onOptionPresent.accept(option);
 		}
-		else if(onParamNotPresent != null){
-			onParamNotPresent.run();
+		else if(onOptionNotPresent != null){
+			onOptionNotPresent.run();
 		}
 		
 	}
 	
-	// public boolean addParameter(String paramName){
-	// 	return this.getParameters().put(paramName, new Parameter(paramName)) == null;
+	// public boolean addOption(String optionName){
+	// 	return this.getOptions().put(optionName, new OptionData(optionName)) == null;
 	// }
 	
-	// public boolean addParameter(String paramName, String paramContent){
-	// 	return this.getParameters().put(paramName,
-	// 			new Parameter(paramName, paramContent)) == null;
+	// public boolean addOption(String optionName, String optionContent){
+	// 	return this.getOptions().put(optionName,
+	// 			new OptionData(optionName, optionContent)) == null;
 	// }
 	
 	private String[] splitCommandAndContent(String command){
@@ -442,13 +440,13 @@ public class Request implements Utils {
 		
 	}
 	
-	public List<Parameter> getDuplicateParamList(){
-		return this.duplicateParams;
+	public List<OptionData> getDuplicateOptionList(){
+		return this.duplicateOptions;
 	}
 	
 	public boolean hasError(){
-		return this.getDuplicateParamList() != null
-				&& this.getDuplicateParamList().size() != 0;
+		return this.getDuplicateOptionList() != null
+				&& this.getDuplicateOptionList().size() != 0;
 	}
 	
 	public String getDefaultErrorMessage(){
@@ -460,43 +458,43 @@ public class Request implements Utils {
 			
 			String pluralTester;
 			
-			if(this.getDuplicateParamList().size() == 1)
-				pluralTester = "That parameter";
+			if(this.getDuplicateOptionList().size() == 1)
+				pluralTester = "That option";
 			else
-				pluralTester = "Those parameters";
+				pluralTester = "Those options";
 			
 			StringBuilder message = new StringBuilder();
 			
 			message.append(pluralTester).append(
 					" has been entered more than once : ");
 			
-			List<Parameter> handledDupes = new ArrayList<>();
+			List<OptionData> handledDupes = new ArrayList<>();
 			
-			for(int i = 0; i < this.getDuplicateParamList().size(); i++){
+			for(int i = 0; i < this.getDuplicateOptionList().size(); i++){
 				
-				Parameter param = this.getDuplicateParamList().get(i);
+				OptionData option = this.getDuplicateOptionList().get(i);
 				
-				if(!handledDupes.contains(param)){
+				if(!handledDupes.contains(option)){
 					
-					handledDupes.add(param);
+					handledDupes.add(option);
 					
 					message.append("\n");
 					
-					if(this.getDuplicateParamList().size() != 1)
+					if(this.getDuplicateOptionList().size() != 1)
 						message.append(i + 1).append(". ");
 					else
 						message.append("~ ");
 					
-					message.append(param.getName());
+					message.append(option.getOptionName());
 					
 				}
 				
 			}
 			
-			if(this.getDuplicateParamList().size() == 1)
-				pluralTester = "that parameter";
+			if(this.getDuplicateOptionList().size() == 1)
+				pluralTester = "that option";
 			else
-				pluralTester = "those parameters";
+				pluralTester = "those options";
 			
 			message.append("\n")
 					.append(String
@@ -509,20 +507,20 @@ public class Request implements Utils {
 		
 	}
 	
-	public void setParamLinkMap(List<List<String>> map){
+	public void setOptionLinkMap(List<List<String>> map){
 		
-		if(getParameters() != null)
-			getParameters().forEach((key, param) -> {
+		if(getOptions() != null)
+			getOptions().forEach((key, option) -> {
 				
-				for(List<String> paramsGroup : map){
+				for(List<String> optionsGroup : map){
 					
-					if(paramsGroup.contains(key)){
+					if(optionsGroup.contains(key)){
 						
-						if(this.parametersLinks == null){
-							this.parametersLinks = new HashMap<>();
+						if(this.optionsLinks == null){
+							this.optionsLinks = new HashMap<>();
 						}
 						
-						this.parametersLinks.put(param, paramsGroup);
+						this.optionsLinks.put(option, optionsGroup);
 						break;
 						
 					}
@@ -533,19 +531,19 @@ public class Request implements Utils {
 		
 	}
 	
-	public void setParamLink(String param, String... links){
+	public void setOptionLink(String optionName, String... links){
 		
 		if(links.length != 0){
 			
-			onParameterPresent(param, (parameter) -> {
+			onOptionPresent(optionName, (option) -> {
 				
-				if(this.parametersLinks == null){
-					this.parametersLinks = new HashMap<>();
+				if(this.optionsLinks == null){
+					this.optionsLinks = new HashMap<>();
 				}
 				
 				List<String> list = new ArrayList<>(Arrays.asList(links));
 				
-				this.parametersLinks.put(parameter, list);
+				this.optionsLinks.put(option, list);
 				
 			});
 			
@@ -553,54 +551,54 @@ public class Request implements Utils {
 		
 	}
 	
-	public void setParameterContentLess(String paramName){
-		Parameter paramFound = getParameter(paramName);
+	public void setOptionContentLess(String optionName){
+		OptionData optionFound = getOption(optionName);
 		
-		if(paramFound == null){
-			throw new IllegalStateException("Parameter \"" + paramName
+		if(optionFound == null){
+			throw new IllegalStateException("Option \"" + optionName
 					+ "\" is not present or linked in this request.");
 		}
 		else{
 			
-			if(paramFound.getContent() != null){
+			if(optionFound.getContent() != null){
 				
 				if(!hasContent())
-					setContent(paramFound.getContent());
+					setContent(optionFound.getContent());
 				else
-					setContent(getContent() + " " + paramFound.getContent());
+					setContent(getContent() + " " + optionFound.getContent());
 				
 			}
 			
-			paramFound.setAcceptingContent(false);
+			optionFound.setAcceptingContent(false);
 			
 		}
 	}
 	
-	public void setParamsAsContentLess(List<String> paramsToTreatAsContentLess){
-		this.setParamsAsContentLess(paramsToTreatAsContentLess
+	public void setOptionsAsContentLess(List<String> optionsToTreatAsContentLess){
+		this.setOptionsAsContentLess(optionsToTreatAsContentLess
 				.toArray(new String[0]));
 	}
 	
-	public void setParamsAsContentLess(String[] paramsToTreatAsContentLess){
+	public void setOptionsAsContentLess(String[] optionsToTreatAsContentLess){
 		
-		for(String paramName : paramsToTreatAsContentLess){
+		for(String optionName : optionsToTreatAsContentLess){
 			try{
-				this.setParameterContentLess(paramName);
+				this.setOptionContentLess(optionName);
 			}
 			catch(IllegalStateException e){}
 		}
 		
 	}
 	
-	public void setParameterWeight(String parameterName, int weightPosition)
+	public void setOptionWeight(String optionName, int weightPosition)
 			throws IllegalArgumentException{
-		this.setParameterWeight(getParameter(parameterName), weightPosition);
+		this.setOptionWeight(getOption(optionName), weightPosition);
 	}
 	
-	public void setParameterWeight(Parameter parameter, int weightPosition)
+	public void setOptionWeight(OptionData option, int weightPosition)
 			throws IllegalArgumentException{
 		
-		if(parameter == null){
+		if(option == null){
 			throw new IllegalArgumentException("The parameter cannot be null.");
 		}
 		if(weightPosition < 1){
@@ -608,11 +606,11 @@ public class Request implements Utils {
 					"The importance parameter can only be 1 or above.");
 		}
 		
-		final int prevWeightPosition = parameter.getWeightPosition();
+		final int prevWeightPosition = option.getWeightPosition();
 		
-		if(parameter.setWeight(weightPosition) > Parameter.DEFAULT_WEIGHT){
+		if(option.setWeight(weightPosition) > OptionData.DEFAULT_WEIGHT){
 			
-			final boolean isWeightSmaller = prevWeightPosition != Parameter.DEFAULT_WEIGHT
+			final boolean isWeightSmaller = prevWeightPosition != OptionData.DEFAULT_WEIGHT
 					&& prevWeightPosition > weightPosition;
 			
 			int smallestPosition = isWeightSmaller ? weightPosition
@@ -620,16 +618,16 @@ public class Request implements Utils {
 			
 			int vector = isWeightSmaller ? 1 : -1;
 			
-			this.parameters.forEach((s, param) -> {
+			this.options.forEach((s, optionO) -> {
 				
-				if(param.getWeight() != Parameter.DEFAULT_WEIGHT
+				if(optionO.getWeight() != OptionData.DEFAULT_WEIGHT
 						&& prevWeightPosition != 0
-						&& !parameter.equals(param)
-						&& param.getWeightPosition() >= smallestPosition
-						&& param.getWeightPosition() <= parameter
+						&& !option.equals(optionO)
+						&& optionO.getWeightPosition() >= smallestPosition
+						&& optionO.getWeightPosition() <= option
 								.getWeightPosition()){
 					
-					param.setWeight(param.getWeightPosition() + vector);
+					optionO.setWeight(optionO.getWeightPosition() + vector);
 					
 				}
 				
@@ -639,18 +637,17 @@ public class Request implements Utils {
 		
 	}
 	
-	public static String buildMessageFromArgs(String[] args,
-			char parametersPrefix){
+	public static String buildMessageFromArgs(String[] args, char optionsPrefix){
 		StringBuilder builder = new StringBuilder();
 		
 		for(String arg : args){
 			
-			String protectedParamPrefix = Pattern.quote(String
-					.valueOf(parametersPrefix));
-			String paramRegex = "^(" + protectedParamPrefix + "{1,2}.+|"
-					+ protectedParamPrefix + "{2})$";
+			String protectedOptionPrefix = Pattern.quote(String
+					.valueOf(optionsPrefix));
+			String optionRegex = "^(" + protectedOptionPrefix + "{1,2}.+|"
+					+ protectedOptionPrefix + "{2})$";
 			
-			if(arg.matches(paramRegex)){
+			if(arg.matches(optionRegex)){
 				builder.append(arg);
 			}
 			else{

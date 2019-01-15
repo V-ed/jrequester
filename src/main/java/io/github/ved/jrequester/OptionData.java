@@ -1,10 +1,10 @@
 package io.github.ved.jrequester;
 
-public class Parameter {
+public class OptionData {
 	
 	public static final int DEFAULT_WEIGHT = 0;
 	
-	private String name;
+	private String optionName;
 	private String content;
 	
 	private int position;
@@ -13,8 +13,8 @@ public class Parameter {
 	private int weightPosition;
 	private int weight;
 	
-	protected Parameter(String paramName, int position){
-		this.name = paramName;
+	protected OptionData(String optionName, int position){
+		this.optionName = optionName;
 		
 		this.setPosition(position);
 		this.acceptsContent = true;
@@ -22,19 +22,19 @@ public class Parameter {
 		
 	}
 	
-	public String getName(){
-		return name;
+	public String getOptionName(){
+		return optionName;
 	}
 	
 	public String getContent(){
 		return content;
 	}
 	
-	protected void setContent(String parameterContent){
-		if(parameterContent == null)
+	protected void setContent(String optionContent){
+		if(optionContent == null)
 			this.content = null;
 		else
-			this.content = parameterContent.replaceAll("\"", "");
+			this.content = optionContent.replaceAll("\"", "");
 	}
 	
 	public int getPosition(){
@@ -90,14 +90,14 @@ public class Parameter {
 	@Override
 	public boolean equals(Object obj){
 		
-		if(obj instanceof Parameter){
+		if(obj instanceof OptionData){
 			
-			if(getName() == null)
+			if(getOptionName() == null)
 				return false;
 			
-			Parameter parameterToCompare = (Parameter)obj;
+			OptionData optionToCompare = (OptionData)obj;
 			
-			return getName().equals(parameterToCompare.getName());
+			return getOptionName().equals(optionToCompare.getOptionName());
 			
 		}
 		
