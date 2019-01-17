@@ -637,6 +637,38 @@ public class Request implements Utils {
 		
 	}
 	
+	public void setOptions(Option... options){
+		
+		if(options != null && options.length > 0){
+			
+			List<List<String>> paramsHelpMap = new ArrayList<>();
+			List<String> contentLessParams = new ArrayList<>();
+			
+			for(Option commandParamHelp : options){
+				
+				paramsHelpMap.add(commandParamHelp.getAllOptions());
+				
+				if(!commandParamHelp.doesAcceptsContent()){
+					contentLessParams.add(commandParamHelp.getName());
+				}
+				
+				if(commandParamHelp.getWeight() != 0){
+					try{
+						setOptionWeight(commandParamHelp.getName(),
+								commandParamHelp.getWeight());
+					}
+					catch(IllegalArgumentException e){}
+				}
+				
+			}
+			
+			setOptionLinkMap(paramsHelpMap);
+			setOptionsAsContentLess(contentLessParams);
+			
+		}
+		
+	}
+	
 	public static String buildMessageFromArgs(String[] args, char optionsPrefix){
 		StringBuilder builder = new StringBuilder();
 		
