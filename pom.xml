@@ -6,7 +6,7 @@
     
     <groupId>io.github.v-ed</groupId>
     <artifactId>jrequester</artifactId>
-    <version>0.1.0</version>
+    <version>0.2.0</version>
     
     <name>jrequester</name>
     <description>Java implementation of a Request handler</description>
