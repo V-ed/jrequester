@@ -297,7 +297,7 @@ public class Request implements Utils {
 		return this.commandPrefix;
 	}
 	
-	public Map<String, OptionData> getOptions(){
+	public Map<String, OptionData> getOptionsData(){
 		return this.options;
 	}
 	
@@ -319,7 +319,7 @@ public class Request implements Utils {
 		
 	}
 	
-	public OptionData getOptionsFromWeight(int weight){
+	public OptionData getOptionFromWeight(int weight){
 		
 		for(Map.Entry<String, OptionData> optionEntry : this.options.entrySet()){
 			
@@ -356,7 +356,7 @@ public class Request implements Utils {
 				
 			}
 			
-			OptionData optionFound = getOptions().get(optionName);
+			OptionData optionFound = getOptionsData().get(optionName);
 			
 			if(optionFound != null)
 				return optionFound;
@@ -376,10 +376,10 @@ public class Request implements Utils {
 	}
 	
 	// public boolean hasOption(String optionName){
-	// 	if(getOptions() == null)
+	// 	if(getOptionsData() == null)
 	// 		return false;
 	
-	// 	return this.getOptions().containsKey(optionName);
+	// 	return this.getOptionsData().containsKey(optionName);
 	// }
 	
 	public boolean hasOption(String... optionNames){
@@ -387,7 +387,7 @@ public class Request implements Utils {
 	}
 	
 	public boolean hasOptions(){
-		return getOptions() != null;
+		return getOptionsData() != null;
 	}
 	
 	public void onOptionPresent(String optionName,
@@ -412,11 +412,11 @@ public class Request implements Utils {
 	}
 	
 	// public boolean addOption(String optionName){
-	// 	return this.getOptions().put(optionName, new OptionData(optionName)) == null;
+	// 	return this.getOptionsData().put(optionName, new OptionData(optionName)) == null;
 	// }
 	
 	// public boolean addOption(String optionName, String optionContent){
-	// 	return this.getOptions().put(optionName,
+	// 	return this.getOptionsData().put(optionName,
 	// 			new OptionData(optionName, optionContent)) == null;
 	// }
 	
@@ -509,8 +509,8 @@ public class Request implements Utils {
 	
 	public void setOptionLinkMap(List<List<String>> map){
 		
-		if(getOptions() != null)
-			getOptions().forEach((key, option) -> {
+		if(getOptionsData() != null)
+			getOptionsData().forEach((key, option) -> {
 				
 				for(List<String> optionsGroup : map){
 					
