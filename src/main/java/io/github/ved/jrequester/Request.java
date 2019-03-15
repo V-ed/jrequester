@@ -38,9 +38,18 @@ public class Request implements Utils {
 		this(receivedMessage, DEFAULT_COMMAND_PREFIX, optionsPrefix);
 	}
 	
+	public Request(String[] args, String commandPrefix){
+		this(buildMessageFromArgs(args, DEFAULT_OPTION_PREFIX), commandPrefix,
+				DEFAULT_OPTION_PREFIX);
+	}
+	
 	public Request(String[] args, String commandPrefix, char optionsPrefix){
 		this(buildMessageFromArgs(args, optionsPrefix), commandPrefix,
 				optionsPrefix);
+	}
+	
+	public Request(String receivedMessage, String commandPrefix){
+		this(receivedMessage, commandPrefix, DEFAULT_OPTION_PREFIX);
 	}
 	
 	public Request(String receivedMessage, String commandPrefix,
@@ -77,9 +86,9 @@ public class Request implements Utils {
 		int endPos;
 		
 		public PossibleOption(String name, int index, int startPos, int endPos){
+			this.startPos = startPos;
 			this.name = name;
 			this.index = index;
-			this.startPos = startPos;
 			this.endPos = endPos;
 		}
 	}
