@@ -13,7 +13,7 @@ public class RequestTest {
 		Request request = new Request("!hi");
 		
 		assertEquals("hi", request.getCommand());
-		assertEquals("!hi", request.getCommandNoFormat());
+		assertEquals("!hi", request.getCommandWithPrefix());
 		
 	}
 	

@@ -22,6 +22,8 @@ public class Request implements Utils {
 	
 	private List<OptionData> duplicateOptions;
 	
+	private boolean isCommand;
+	
 	public Request(String[] args){
 		this(args, DEFAULT_OPTION_PREFIX);
 	}
@@ -66,7 +68,8 @@ public class Request implements Utils {
 		}
 		else{
 			
-			String[] messageSplit = splitCommandAndContent(receivedMessage);
+			String[] messageSplit = splitCommandAndContent(commandPrefix,
+					receivedMessage);
 			
 			setCommand(messageSplit[0]);
 			setContent(messageSplit[1]);
@@ -257,14 +260,14 @@ public class Request implements Utils {
 	}
 	
 	public String getCommand(){
+		return this.command;
+	}
+	
+	public String getCommandWithPrefix(){
 		if(!this.hasCommand())
 			return null;
 		
-		return this.getCommandNoFormat().substring(getCommandPrefix().length());
-	}
-	
-	public String getCommandNoFormat(){
-		return this.command;
+		return this.getCommandPrefix() + this.command;
 	}
 	
 	public void setCommand(String command){
@@ -272,17 +275,16 @@ public class Request implements Utils {
 	}
 	
 	public boolean hasCommand(){
-		return this.getCommandNoFormat() != null;
+		return this.getCommand() != null;
 	}
 	
 	public boolean isCommand(){
-		return this.hasCommand()
-				&& this.getCommandNoFormat().startsWith(getCommandPrefix());
+		return this.isCommand && this.hasCommand();
 	}
 	
 	public boolean isOnlyCommandPrefix(){
-		return this.hasCommand()
-				&& this.getCommandNoFormat().equals(getCommandPrefix());
+		return this.isCommand()
+				&& this.getCommandWithPrefix().equals(getCommandPrefix());
 	}
 	
 	public String getContent(){
@@ -429,20 +431,34 @@ public class Request implements Utils {
 	// 			new OptionData(optionName, optionContent)) == null;
 	// }
 	
-	private String[] splitCommandAndContent(String command){
+	private String[] splitCommandAndContent(String commandPrefix, String command){
 		
-		// Remove leading / trailing spaces, as well as shrinking consecutives
-		// whitespace.
-		// Also, this adds a space at the end to force the split to be at least
-		// of size 2, which means there will always be a command and some
-		// content.
-		String[] splitted = command.trim().replaceAll("\\s+", " ").concat(" ")
-				.split(" ", 2);
+		isCommand = command.startsWith(commandPrefix);
 		
-		splitted[0] = splitted[0].toLowerCase();
+		String noPrefixCommand = command.substring(commandPrefix.length());
 		
-		if(splitted[1].length() != 0){
-			splitted[1] = splitted[1].trim();
+		String[] splitted;
+		
+		if(isCommand){
+			
+			// Remove leading / trailing spaces, as well as shrinking consecutives
+			// whitespace.
+			// Also, this adds a space at the end to force the split to be at least
+			// of size 2, which means there will always be a command and some
+			// content.
+			splitted = noPrefixCommand.trim().replaceAll("\\s+", " ")
+					.concat(" ").split(" ", 2);
+			
+			splitted[0] = splitted[0].toLowerCase();
+			
+			if(splitted[1].length() != 0){
+				splitted[1] = splitted[1].trim();
+			}
+			
+		}
+		else{
+			splitted = new String[2];
+			splitted[1] = command;
 		}
 		
 		return splitted;
