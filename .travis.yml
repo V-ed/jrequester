@@ -36,12 +36,14 @@ deploy:
     on:
       condition: -z $IS_SNAPSHOT
       tags: true
+      jdk: openjdk8
   - provider: script
     script: mvn deploy -DskipTests -B
     skip_cleanup: true
     on:
       condition: $IS_SNAPSHOT
       branch: master
+      jdk: openjdk8
 
 notifications:
   email:
