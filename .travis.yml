@@ -20,7 +20,9 @@ script:
   - mvn clean test jacoco:report -B
 
 after_success:
-  - mvn coveralls:report -B
+  - if [ "$TRAVIS_JDK_VERSION" == "openjdk8" ]; then
+      mvn coveralls:report -B;
+    fi
 
 before_deploy:
   - cp .travis.settings.xml $HOME/.m2/settings.xml
