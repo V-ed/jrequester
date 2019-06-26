@@ -31,10 +31,30 @@ public class OptionData {
 	}
 	
 	protected void setContent(String optionContent){
-		if(optionContent == null)
+		
+		if(optionContent == null){
 			this.content = null;
-		else
-			this.content = optionContent.replaceAll("\"", "");
+		}
+		else{
+			
+			String wrapper = null;
+			
+			if(optionContent.matches("^\".*\"$")){
+				wrapper = "\"";
+			}
+			else if(optionContent.matches("^'.*'$")){
+				wrapper = "'";
+			}
+			
+			if(wrapper == null){
+				this.content = optionContent;
+			}
+			else{
+				this.content = optionContent.substring(1, optionContent.length() - 1).replaceAll("\\" + wrapper, wrapper);
+			}
+			
+		}
+		
 	}
 	
 	public int getPosition(){
