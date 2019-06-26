@@ -2,6 +2,7 @@ package io.github.ved.jrequester;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 import org.junit.jupiter.api.Test;
 
@@ -145,6 +146,103 @@ public class RequestTest {
 		assertEquals(prefix, testRequest.getCommandPrefix());
 		assertEquals("test", testRequest.getCommand());
 		
+	}
+	
+	@Test
+	void createOptionData(){
+		
+		Request request = new Request("!hi --option hi!");
+		
+		OptionData requestOption = request.getOption("option");
+		
+		assertEquals("option", requestOption.getOptionName());
+		assertEquals("hi!", requestOption.getContent());
+		assertEquals(0, requestOption.getPosition());
+	
+	}
+	
+	@Test
+	void createOptionDataWithSpace(){
+		
+		Request request = new Request("!hi --option \"hello there!\"");
+		
+		OptionData requestOption = request.getOption("option");
+		
+		assertEquals("option", requestOption.getOptionName());
+		assertEquals("hello there!", requestOption.getContent());
+		assertEquals(0, requestOption.getPosition());
+	
+	}
+	
+	@Test
+	void createShortOptionData(){
+		
+		Request request = new Request("!hi -o hi!");
+		
+		OptionData requestOption = request.getOption("o");
+		
+		assertEquals("o", requestOption.getOptionName());
+		assertEquals("hi!", requestOption.getContent());
+		assertEquals(0, requestOption.getPosition());
+	
+	}
+	
+	@Test
+	void createShortOptionDataWithSpace(){
+		
+		Request request = new Request("!hi -o \"hello there!\"");
+		
+		OptionData requestOption = request.getOption("o");
+		
+		assertEquals("o", requestOption.getOptionName());
+		assertEquals("hello there!", requestOption.getContent());
+		assertEquals(0, requestOption.getPosition());
+	
+	}
+	
+	@Test
+	void createOptionDataWithProtectedQuote(){
+		
+		Request request = new Request("!hi --option \"test \\\" quote\"");
+		
+		OptionData requestOption = request.getOption("option");
+		
+		assertEquals("option", requestOption.getOptionName());
+		assertEquals("test \" quote", requestOption.getContent());
+		assertEquals(0, requestOption.getPosition());
+	
+	}
+	
+	@Test
+	void createShortOptionDataWithProtectedQuote(){
+		
+		Request request = new Request("!hi -o \"test \\\" quote\"");
+		
+		OptionData requestOption = request.getOption("o");
+		
+		assertEquals("o", requestOption.getOptionName());
+		assertEquals("test \" quote", requestOption.getContent());
+		assertEquals(0, requestOption.getPosition());
+	
+	}
+	
+	@Test
+	void createMultipleShortOptionData(){
+		
+		Request request = new Request("!hi -abco hi!");
+		
+		OptionData requestOption = request.getOption("o");
+		
+		assertEquals("o", requestOption.getOptionName());
+		assertEquals("hi!", requestOption.getContent());
+		assertEquals(3, requestOption.getPosition());
+		
+		OptionData requestOption2 = request.getOption("b");
+		
+		assertEquals("b", requestOption2.getOptionName());
+		assertNull(requestOption2.getContent());
+		assertEquals(1, requestOption2.getPosition());
+	
 	}
 	
 }

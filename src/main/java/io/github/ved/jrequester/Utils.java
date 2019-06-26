@@ -9,7 +9,7 @@ public interface Utils {
 	
 	static List<String> splitSpacesExcludeQuotes(String string){
 		List<String> possibleStrings = new ArrayList<>();
-		Matcher matcher = Pattern.compile("[^\\s\"']+|\"([^\"]*)\"|'([^']*)'")
+		Matcher matcher = Pattern.compile("[^\\s\"']+|\"(?!\\\").*\"|'(?!\\').*'")
 				.matcher(string);
 		while(matcher.find()){
 			possibleStrings.add(matcher.group());
