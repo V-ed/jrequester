@@ -50,7 +50,7 @@ public class OptionData {
 				this.content = optionContent;
 			}
 			else{
-				this.content = optionContent.substring(1, optionContent.length() - 1).replaceAll("\\" + wrapper, wrapper);
+				this.content = optionContent.substring(1, optionContent.length() - 1).replaceAll("\\\\" + wrapper, wrapper);
 			}
 			
 		}
