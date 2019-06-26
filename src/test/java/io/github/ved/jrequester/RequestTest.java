@@ -157,7 +157,7 @@ public class RequestTest {
 		
 		assertEquals("option", requestOption.getOptionName());
 		assertEquals("hi!", requestOption.getContent());
-		assertEquals(1, requestOption.getPosition());
+		assertEquals(0, requestOption.getPosition());
 	
 	}
 	
@@ -170,7 +170,7 @@ public class RequestTest {
 		
 		assertEquals("option", requestOption.getOptionName());
 		assertEquals("hello there!", requestOption.getContent());
-		assertEquals(1, requestOption.getPosition());
+		assertEquals(0, requestOption.getPosition());
 	
 	}
 	
@@ -183,7 +183,7 @@ public class RequestTest {
 		
 		assertEquals("o", requestOption.getOptionName());
 		assertEquals("hi!", requestOption.getContent());
-		assertEquals(1, requestOption.getPosition());
+		assertEquals(0, requestOption.getPosition());
 	
 	}
 	
@@ -196,7 +196,7 @@ public class RequestTest {
 		
 		assertEquals("o", requestOption.getOptionName());
 		assertEquals("hello there!", requestOption.getContent());
-		assertEquals(1, requestOption.getPosition());
+		assertEquals(0, requestOption.getPosition());
 	
 	}
 	
@@ -209,7 +209,7 @@ public class RequestTest {
 		
 		assertEquals("option", requestOption.getOptionName());
 		assertEquals("test \" quote", requestOption.getContent());
-		assertEquals(1, requestOption.getPosition());
+		assertEquals(0, requestOption.getPosition());
 	
 	}
 	
@@ -222,7 +222,7 @@ public class RequestTest {
 		
 		assertEquals("o", requestOption.getOptionName());
 		assertEquals("test \" quote", requestOption.getContent());
-		assertEquals(1, requestOption.getPosition());
+		assertEquals(0, requestOption.getPosition());
 	
 	}
 	
@@ -235,13 +235,13 @@ public class RequestTest {
 		
 		assertEquals("o", requestOption.getOptionName());
 		assertEquals("hi!", requestOption.getContent());
-		assertEquals(4, requestOption.getPosition());
+		assertEquals(3, requestOption.getPosition());
 		
 		OptionData requestOption2 = request.getOption("b");
 		
 		assertEquals("b", requestOption2.getOptionName());
 		assertNull(requestOption2.getContent());
-		assertEquals(2, requestOption2.getPosition());
+		assertEquals(1, requestOption2.getPosition());
 	
 	}
 	
