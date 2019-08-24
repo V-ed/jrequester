@@ -663,26 +663,29 @@ public class Request implements Utils {
 	}
 	
 	public void setOptions(Option... options){
+		this.setOptions(Arrays.asList(options));
+	}
+	
+	public void setOptions(List<Option> options){
 		
-		if(options != null && options.length > 0){
+		if(options != null && options.size() > 0){
 			
 			List<List<String>> paramsHelpMap = new ArrayList<>();
 			List<String> contentLessParams = new ArrayList<>();
 			
-			for(Option commandParamHelp : options){
+			for(Option option : options){
 				
-				paramsHelpMap.add(commandParamHelp.getAllOptions());
+				paramsHelpMap.add(option.getAllOptions());
 				
-				if(!commandParamHelp.doesAcceptsContent()){
-					contentLessParams.add(commandParamHelp.getName());
+				if(!option.doesAcceptsContent()){
+					contentLessParams.add(option.getName());
 				}
 				
-				if(commandParamHelp.getWeight() != 0){
+				if(option.getWeight() != 0){
 					try{
-						setOptionWeight(commandParamHelp.getName(),
-								commandParamHelp.getWeight());
+						setOptionWeight(option.getName(), option.getWeight());
 					}
-					catch(IllegalArgumentException e){}
+					catch(IllegalArgumentException ignored){}
 				}
 				
 			}
